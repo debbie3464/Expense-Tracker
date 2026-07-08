@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The expense tracker </title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+
+<body>
+    <nav>
+        <div class="logo">
+            <h1>coollogo</h1>
+        </div>
+        <div class="nav-links">
+            <a href="#">Dashboard</a>
+            <a href="#">Split</a>
+            <a href="#">Settings</a>
+        </div>
+    </nav>
+    <div class="daily-spending">
+        <p id="budget-spent">₹0 spent today</p>
+
+        <progress class = 'daily-progress' id="daily-progress" value="0" max="2000"></progress>
+
+        <div class="budget-summary">
+            <p class="budget-spent" id="large-budget-spent">₹0 spent today</p>
+            <p class="budget-target">of ₹2000 Daily Budget</p>
+        </div>
+
+        <form id="expense" class="expense">
+            <div class="form-group">
+                <label for="amount">Amount</label>
+                <input type="number" id="amount">
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <input type="text" id="description">
+            </div>
+
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select id="category">
+                    <option value="Food">Food</option>
+                    <option value="Utilities">Utilities</option>
+                    <option value="Transportation">Transportation</option>
+                    <option value="Others">Others</option>
+                </select>
+            </div>
+
+            <button type="submit">
+                Add Expense
+            </button>
+
+        </form>
+    </div>
+
+    <div class="visualizations">
+        <div class="pie-chart">
+            <h1> the pie chart will go here </h1>
+
+        </div>
+        <div class="line-chart">
+            <h1>the line chart will go here</h1>
+        </div>
+
+    </div>
+
+    <div class="expense-history">
+        <h1> This will be your expensse history </h1>
+    </div>
+
+    <script src="static/script.js"></script>
+</body>
+
+</html>
