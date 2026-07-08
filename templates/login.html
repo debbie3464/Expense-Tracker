@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 <!DOCTYPE html>
 <html lang="en">
@@ -242,4 +243,250 @@
     }
 </script>
 </body>
+=======
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In</title>
+    <style>
+        /* ==========================================================================
+           Root Variables — ported from dashboard style.css
+           ========================================================================== */
+        :root {
+            --background: #e9dccc;
+            --card: #2e3745d4;
+            --border: #6c83a7;
+            --accent: #ecafa2;
+            --highlight: #d7a889;
+            --text: #e0bdb1;
+            --hover: #616d80;
+ 
+            --primary: var(--highlight);
+            --secondary: var(--accent);
+ 
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+ 
+            --space-sm: 10px;
+            --space-md: 20px;
+            --space-lg: 32px;
+ 
+            --shadow-sm: 0 1px 3px rgba(34, 50, 64, 0.08);
+            --shadow-md: 0 4px 14px rgba(34, 50, 64, 0.12);
+ 
+            --transition-fast: 0.2s ease;
+            --transition-medium: 0.25s ease;
+            --transition-slow: 0.4s ease;
+        }
+ 
+        * {
+            box-sizing: border-box;
+        }
+ 
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background-color: var(--background);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+ 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+ 
+        /* ==========================================================================
+           Auth Card
+           ========================================================================== */
+        .auth-container {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+ 
+            width: 100%;
+            max-width: 380px;
+            padding: var(--space-lg);
+        }
+ 
+        h2 {
+            margin: 0 0 var(--space-md);
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            color: var(--text);
+        }
+ 
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: var(--space-md);
+        }
+ 
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: 0.5px;
+        }
+ 
+        input {
+            height: 48px;
+            width: 100%;
+            padding: 0 16px;
+ 
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+ 
+            background-color: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            font-size: 0.95rem;
+ 
+            transition: border-color var(--transition-medium),
+                        box-shadow var(--transition-medium),
+                        background-color var(--transition-medium);
+        }
+ 
+        input::placeholder {
+            color: rgba(224, 189, 177, 0.6);
+        }
+ 
+        input:hover {
+            border-color: var(--hover);
+        }
+ 
+        input:focus {
+            outline: none;
+            border-color: var(--hover);
+            box-shadow: 0 0 0 4px rgba(97, 109, 128, 0.25);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+ 
+        button {
+            width: 100%;
+            height: 48px;
+            margin-top: 4px;
+ 
+            border: none;
+            border-radius: var(--radius-md);
+ 
+            background-color: var(--highlight);
+            color: var(--background);
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+ 
+            transition: background-color var(--transition-medium),
+                        color var(--transition-medium),
+                        transform var(--transition-medium);
+        }
+ 
+        button:hover {
+            background-color: var(--hover);
+            color: var(--text);
+            transform: translateY(-2px);
+        }
+ 
+        button:active {
+            transform: translateY(0);
+        }
+ 
+        .toggle-link {
+            text-align: center;
+            margin-top: var(--space-md);
+            font-size: 0.85rem;
+            color: rgba(224, 189, 177, 0.7);
+        }
+ 
+        .toggle-link a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            padding: 2px 4px;
+            transition: background-color var(--transition-fast), color var(--transition-fast);
+        }
+ 
+        .toggle-link a:hover {
+            background-color: var(--hover);
+            color: var(--text);
+        }
+ 
+        .hidden {
+            display: none;
+        }
+ 
+        .alert {
+            background-color: #fce8e6;
+            color: #a82e2e;
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            margin-bottom: var(--space-md);
+        }
+    </style>
+</head>
+<body>
+ 
+<div class="auth-container">
+    <!-- Show error messages if flask passes them -->
+    {% if error %}
+    <div class="alert">{{ error }}</div>
+    {% endif %}
+ 
+    <!-- 🔑 LOGIN FORM -->
+    <div id="login-box">
+        <h2>Log In</h2>
+        <form action="/login" method="POST">
+            <div class="form-group">
+                <label for="login-username">Username</label>
+                <input type="text" id="login-username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" name="password" required>
+            </div>
+            <button type="submit">Sign In</button>
+        </form>
+        <div class="toggle-link">
+            Don't have an account? <a href="#" onclick="toggleAuth()">Sign up</a>
+        </div>
+    </div>
+ 
+    <!-- 📝 REGISTRATION FORM -->
+    <div id="register-box" class="hidden">
+        <h2>Create Account</h2>
+        <form action="/register" method="POST">
+            <div class="form-group">
+                <label for="reg-username">Username</label>
+                <input type="text" id="reg-username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="reg-email">Email Address</label>
+                <input type="email" id="reg-email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="reg-password">Password</label>
+                <input type="password" id="reg-password" name="password" required>
+            </div>
+            <button type="submit">Register</button>
+        </form>
+        <div class="toggle-link">
+            Already have an account? <a href="#" onclick="toggleAuth()">Log in</a>
+        </div>
+    </div>
+</div>
+ 
+<script>
+    function toggleAuth() {
+        document.getElementById('login-box').classList.toggle('hidden');
+        document.getElementById('register-box').classList.toggle('hidden');
+    }
+</script>
+</body>
+>>>>>>> 7c0cb20630249950a1e4d8d9f7bcf957bed17658
 </html>

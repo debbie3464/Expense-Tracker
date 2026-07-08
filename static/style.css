@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* ==========================================================================
    Root Variables
    ========================================================================== */
@@ -359,3 +360,366 @@ h1 {
     line-height: 1.3;
     letter-spacing: 0.01em;
 }
+=======
+/* ==========================================================================
+   Root Variables
+   ========================================================================== */
+:root{
+
+    --background:#e9dccc;
+    --card:#2e3745d4;
+    --border:#6c83a7;
+    --accent:#ecafa2;
+    --highlight:#d7a889;
+    --text:#e0bdb1;
+    --hover:#616d80;
+
+    --radius-sm:8px;
+    --radius-md:12px;
+    --radius-lg:20px;
+
+    --space-sm:10px;
+    --space-md:20px;
+    --space-lg:32px;
+
+    --shadow-sm: 0 1px 3px rgba(34, 50, 64, 0.08);
+    --shadow-md: 0 4px 14px rgba(34, 50, 64, 0.12);
+
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body{
+    margin:0;
+    min-height:100vh;
+    background-color: var(--background);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding:var(--space-lg);
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+nav,
+.daily-spending,
+.pie-chart,
+.line-chart,
+.expense-history{
+    border-radius:var(--radius-lg);
+}
+
+/* ==========================================================================
+   Navigation
+   ========================================================================== */
+nav {
+    height: 10vh;
+    width: 100%;
+    background-color: var(--card);
+
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+
+    padding: 0 var(--space-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.logo {
+    height: 100%;
+    width: 80px;
+
+    background-color: var(--card);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+}
+
+.logo h1 {
+    font-size: 1rem;
+    color: var(--text);
+    letter-spacing: 0.02em;
+}
+
+.nav-links {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.nav-links a {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 500;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-sm);
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.nav-links a:hover {
+    background-color: var(--hover);
+    transform: translateY(-1px);
+}
+
+.nav-links a:active {
+    transform: translateY(0);
+}
+
+
+
+.daily-spending {
+    height:auto;
+    width: 100%;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: var(--space-md);
+
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.daily-progress{
+    height: 48px;
+    width: 80%;
+    flex-shrink: 0;
+
+    appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.daily-progress::-webkit-progress-bar {
+    background-color: var(--accent);
+    border-radius: var(--radius-lg);
+}
+
+.daily-progress::-webkit-progress-value {
+    background-color: var(--background);
+    border-radius: var(--radius-lg);
+    transition: width 0.4s ease;
+}
+
+.daily-progress::-moz-progress-bar {
+    background-color: var(--background);
+    border-radius: var(--radius-lg);
+    transition: width 0.4s ease;
+}
+
+.budget-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.budget-summary p {
+    margin: 0;
+}
+
+.budget-spent {
+    font-size: 3rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.budget-target {
+    font-size: 0.85rem;
+    color: rgba(224, 189, 177, .6);
+    margin-top: 4px;
+}
+
+.expense{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:flex-end;
+    gap:24px;
+
+    width:100%;
+    padding:24px;
+
+    background-color:var(--card);
+
+    border:2px solid var(--border);
+    border-radius:var(--radius-lg);
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+
+    flex:1;
+    min-width:180px;
+}
+
+.form-group label{
+    font-size:.85rem;
+    font-weight:600;
+    color:var(--text);
+
+    letter-spacing:.5px;
+}
+
+.expense input,
+.expense select{
+    height:48px;
+
+    padding:0 16px;
+
+    border-radius:var(--radius-md);
+
+    border:2px solid var(--border);
+
+    background-color:rgba(255,255,255,.06);
+
+    color:var(--text);
+
+    font-size:.95rem;
+
+    transition: border-color .25s ease, box-shadow .25s ease, background-color .25s ease;
+}
+
+.expense input::placeholder{
+    color:rgba(224,189,177,.6);
+}
+
+.expense input:hover,
+.expense select:hover{
+    border-color:var(--hover);
+}
+
+.expense input:focus,
+.expense select:focus{
+    outline:none;
+    border-color:var(--hover);
+    box-shadow:0 0 0 4px rgba(97,109,128,.25);
+}
+
+.expense button{
+    height:48px;
+
+    padding:0 24px;
+
+    border:none;
+
+    border-radius:var(--radius-md);
+
+    background-color:var(--highlight);
+
+    color:var(--background);
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition: background-color .25s ease, color .25s ease, transform .25s ease;
+}
+
+.expense button:hover{
+    background-color:var(--hover);
+    color:var(--text);
+    transform:translateY(-2px);
+}
+
+.expense button:active{
+    transform:translateY(0);
+}
+
+/* ==========================================================================
+   Visualizations
+   ========================================================================== */
+.visualizations {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    gap: var(--space-md);
+
+    height: 50vh;
+    width: 100%;
+    background-color: var(--background);
+}
+
+.pie-chart {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: var(--space-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.line-chart {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: var(--space-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.pie-chart,
+.line-chart {
+    flex: 1;
+}
+
+.pie-chart h1,
+.line-chart h1 {
+    font-size: 1.1rem;
+    text-align: center;
+    color: var(--accent);
+    padding: 0 var(--space-sm);
+}
+
+/* ==========================================================================
+   Expense History
+   ========================================================================== */
+.expense-history {
+    min-height: 20vh;
+    width: 100%;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.expense-history h1 {
+    color: var(--text);
+    font-size: 1.2rem;
+}
+
+/* ==========================================================================
+   Typography
+   ========================================================================== */
+h1 {
+    margin: 0;
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+}
+>>>>>>> 7c0cb20630249950a1e4d8d9f7bcf957bed17658
