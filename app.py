@@ -1,12 +1,14 @@
-
-from flask import Flask, jsonify, request, render_template, redirect,  session
+from flask import Flask, jsonify, request, render_template, redirect, session
 from flask_cors import CORS
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
+import os
 import sqlite3
 
 app = Flask(__name__)
 CORS(app)
 
-app.secret_key = "super_secret_unpredictable_key_string"
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-fallback-key-change-me")
 
 def get_db_connection():
     conn = sqlite3.connect("database.db")
@@ -31,7 +33,7 @@ def logout():
     session.clear() 
     return redirect('/')
 
-@app.route("/register" , methods = ["POST"])
+@app.route("/register", methods=["POST"])
 def register():
     username = request.form.get('username')
     email = request.form.get('email')
@@ -39,49 +41,43 @@ def register():
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    
-    try:
-        # 1. Insert the new user profile row
-        cursor.execute('''
+    cursor.execute('''
             INSERT INTO users (username, email, password_hash)
             VALUES (?, ?, ?)
-        ''', (username, email, password))
-        conn.commit()
+        ''', (username, email, generate_password_hash(password)))
+    conn.commit()
 
-        # 2. Immediately look up the auto-generated user_id of the user we just made
-        cursor.execute("SELECT user_id FROM users WHERE username = ?", (username,))
-        user = cursor.fetchone()
-        
-        # 3. Log them in right away by putting them into the secure cookie session
-        session['user_id'] = user['user_id']
-        session['username'] = username
-        
-        # 4. Teleport them straight to their dashboard
-        return redirect('/dashboard')
+    cursor.execute("SELECT user_id FROM users WHERE username = ?", (username,))
+    user = cursor.fetchone()
 
-    except sqlite3.IntegrityError:
-        # If the username or email is already taken, kick them back to login with an error
-        return render_template('login.html', error="Username or Email already exists!")
+    default_categories = ["Food", "Utilities", "Transportation", "Others"]
+    for cat in default_categories:
+        cursor.execute(
+            "INSERT INTO Central_Categories (category_name, user_id) VALUES (?, ?)",
+            (cat, user['user_id'])
+        )
+    conn.commit()
+
+    session['user_id'] = user['user_id']
+    session['username'] = username
     
-    finally:
-        # Always close the connection nicely so our database file doesn't lock up
-        conn.close()
-
-@app.route("/login", methods = ["POST"])
+    return redirect('/dashboard')
+        
+@app.route("/login", methods=["POST"])
 def login():
     username = request.form.get('username')
     password = request.form.get('password')
 
     conn = get_db_connection()
-    cursor = conn.cursor()
-
+    cursor = conn.cursor() 
+    
     cursor.execute('''
-        SELECT * FROM users WHERE username = ? AND password_hash = ?
-    ''', (username, password))
+                SELECT * FROM users WHERE username = ?
+            ''', (username,))
     user = cursor.fetchone()
     conn.close()
 
-    if user:
+    if user and check_password_hash(user['password_hash'], password):
         session['user_id'] = user['user_id']
         session['username'] = user['username']
         return redirect('/dashboard')
@@ -94,16 +90,11 @@ def dashboard_summary():
         return jsonify({"error": "Unauthorized"}), 401
 
     current_user = session['user_id']
-    
-    from datetime import datetime
-    # Ensure this matches the exact date format stored in your DB (e.g., "2026-07-08")
     today_str = datetime.now().strftime("%Y-%m-%d") 
 
     conn = get_db_connection()
-    cursor = conn.cursor()
-
     try:
-        cursor.execute('''
+        cursor = conn.execute('''
             SELECT SUM(amount) as total 
             FROM Central_Expenses 
             WHERE user_id = ? AND date = ?
@@ -116,77 +107,79 @@ def dashboard_summary():
             "total_spent_today": total_spent,
             "daily_budget_target": 2000  
         })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
     finally:
         conn.close()
-
-
 @app.route('/api/add-expense', methods=['POST'])
 def add_expense():
     if 'user_id' not in session:
         return jsonify({"error": "Unauthorized"}), 401
-        
-    current_user = session['user_id']
+
     data = request.get_json()
-    if not data:
-        return jsonify({"error": "No data provided"}), 400
+    if not data or 'amount' not in data or 'category' not in data:
+        return jsonify({"error": "Missing amount or category"}), 400
 
-    amount = data.get('amount')
-    description = data.get('description')
-    category_id = data.get('category') 
-
-    if not amount or not description or not category_id:
-        return jsonify({"error": "Missing required fields"}), 400
-
-    from datetime import datetime
+    category_name = data['category']
     now = datetime.now()
-    today_str = now.strftime("%Y-%m-%d") 
-    time_str = now.strftime("%H:%M:%S") 
+    today_str = now.strftime("%Y-%m-%d")
+    time_str = now.strftime("%H:%M:%S")
 
     conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    try:
-        # 🔥 PLACE IT RIGHT HERE (Turns off the strict checker for this insert)
-        cursor.execute("PRAGMA foreign_keys = OFF;")
 
-        # Your insert query follows right after
-        cursor.execute('''
-            INSERT INTO Central_Expenses (user_id, amount, description, date, time, category_id)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (current_user, amount, description, today_str, time_str, category_id))
+    cat_lookup = conn.execute(
+        "SELECT category_id FROM Central_Categories WHERE category_name = ? AND user_id = ?",
+        (category_name, session['user_id'])
+    ).fetchone()
+
+    if not cat_lookup:
+        conn.close()
+        return jsonify({"error": "Category does not exist"}), 400
+
+    category_id = cat_lookup['category_id']
+
+    conn.execute('''
+        INSERT INTO Central_Expenses (user_id, amount, description, date, time, category_id)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (session['user_id'], data['amount'], data.get('description', ''), today_str, time_str, category_id))
+
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "success"})
+
+
+
+@app.route('/api/add-category', methods=['POST'])
+def add_category():
+    data = request.get_json()
+    conn = get_db_connection()
+    try:
+        conn.execute("INSERT INTO Central_Categories (category_name, user_id) VALUES (?, ?)", 
+                     (data['category_name'], session['user_id']))
         conn.commit()
-        
-        return jsonify({"status": "success", "message": "Expense added successfully!"}), 201
-    except Exception as e:
-        print("!!! GENERAL SQL ERROR !!!:", str(e))
-        return jsonify({"error": "Database error", "details": str(e)}), 500
+        return jsonify({"status": "success"})
+    except:
+        return jsonify({"error": "Could not add category"}), 400
     finally:
         conn.close()
 
+    
 @app.route('/api/expenses', methods=['GET'])
 def get_all_expenses():
+
     if 'user_id' not in session:
         return jsonify({"error": "Unauthorized"}), 401
         
-    current_user = session['user_id']
-
     conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    # Updated to match your exact SQLite column names:
-    cursor.execute('''
-        SELECT expense_id, amount, description, date, time, user_id, category_id 
-        FROM Central_Expenses 
-        WHERE user_id = ? 
-        ORDER BY expense_id DESC
-    ''', (current_user,))
-    
-    rows = cursor.fetchall()
+
+    query = '''
+        SELECT e.amount, e.description, e.date, c.category_name 
+        FROM Central_Expenses e
+        JOIN Central_Categories c ON e.category_id = c.category_id
+        WHERE e.user_id = ? 
+        ORDER BY e.expense_id DESC
+    '''
+    rows = conn.execute(query, (session['user_id'],)).fetchall()
     expenses_list = [dict(row) for row in rows]
     conn.close()
-
     return jsonify(expenses_list)
 
 if __name__ == '__main__':
