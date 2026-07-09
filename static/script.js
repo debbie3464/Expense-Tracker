@@ -1,6 +1,6 @@
  HEAD
 document.addEventListener("DOMContentLoaded", function() {
-    // Run these immediately when the dashboard loads
+   
     loadDashboardSummary();
     loadExpenseHistory();
 
