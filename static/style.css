@@ -65,6 +65,7 @@ nav {
 
     padding: 0 var(--space-lg);
     box-shadow: var(--shadow-sm);
+    
 }
 
 .logo {
@@ -103,8 +104,12 @@ nav {
 }
 
 .nav-links a:hover {
-    background-color: var(--hover);
+    
     transform: translateY(-1px);
+
+    
+    border:2px solid var(--border);
+    border-radius:var(--radius-lg);
 }
 
 .nav-links a:active {
@@ -390,13 +395,13 @@ body {
     bottom: -4px;
     width: 0;
     height: 2px;
-    background: #940e0e6c;
-    transition: width 0.25s ease;
+    background: #6c83a7;
+    transition: width 0.50s ease;
 }
 .nav-links a:hover::after {
     width: 100%;
 }
 .nav-links a.active {
-    color:  #940e0e6c;
+    color:#6c83a7;
     font-weight: 600;
 }
