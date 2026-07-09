@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <nav>
+        <div class="logo">
+            <h1>i will draw cool logo later</h1>
+        </div>
+        <div class="nav-links">
+            <a href="/dashboard" class="{{ 'active' if request.path == '/dashboard' else '' }}">Dashboard</a>
+            <a href="/split" class="{{ 'active' if request.path == '/split' else '' }}">Split</a>
+            <a href="/settings" class="{{ 'active' if request.path == '/settings' else '' }}">Settings</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </nav>
+    
+    <h1> this will be my split section</h1>
+</body>
+</html>

@@ -69,6 +69,12 @@ def dashboard():
         return redirect("/")
     return render_template("index.html")
 
+@app.route("/split")
+def split():
+    if "user_id" not in session:
+        return redirect("/")
+    return render_template("split.html")
+
 
 @app.route('/logout')
 def logout():
@@ -201,8 +207,6 @@ def add_expense():
     if not data or 'amount' not in data or 'category' not in data:
         return jsonify({"error": "Missing amount or category"}), 400
 
-    # --- RED/YELLOW FIX: validate amount is a real, positive number
-    # instead of trusting whatever the client sends.
     try:
         amount = float(data['amount'])
     except (TypeError, ValueError):
@@ -250,7 +254,6 @@ def add_expense():
 
 @app.route('/api/add-category', methods=['POST'])
 def add_category():
-    # --- RED FIX: this route had no auth check at all.
     if 'user_id' not in session:
         return jsonify({"error": "Unauthorized"}), 401
 
