@@ -11,12 +11,13 @@
 <body>
     <nav>
         <div class="logo">
-            <h1>coollogo</h1>
+            <h1>i will draw cool logo later</h1>
         </div>
         <div class="nav-links">
-            <a href="#">Dashboard</a>
-            <a href="#">Split</a>
-            <a href="#">Settings</a>
+            <a href="/dashboard" class="{{ 'active' if request.path == '/dashboard' else '' }}">Dashboard</a>
+            <a href="/split" class="{{ 'active' if request.path == '/split' else '' }}">Split</a>
+            <a href="/settings" class="{{ 'active' if request.path == '/settings' else '' }}">Settings</a>
+            <a href="/logout">Logout</a>
         </div>
     </nav>
     <div class="daily-spending">
@@ -59,8 +60,7 @@
 
     <div class="visualizations">
         <div class="pie-chart">
-            <h1> the pie chart will go here </h1>
-
+            <canvas id="pieChart"></canvas>
         </div>
         <div class="line-chart">
             <h1>the line chart will go here</h1>
@@ -70,8 +70,11 @@
 
     <div class="expense-history">
         <h1>Expense History</h1>
-        <div id="expense-list"> 
+        <div id="expense-list">
+
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="static/script.js"></script>
 </body>

@@ -182,5 +182,26 @@ def get_all_expenses():
     conn.close()
     return jsonify(expenses_list)
 
+@app.route("/api/piechart-data", methods=['GET'])
+def get_categories():
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    current_user = session['user_id']
+    conn = get_db_connection()
+
+    query = '''
+        SELECT c.category_name, SUM(e.amount) as total_amount
+        FROM Central_Expenses e
+        JOIN Central_Categories c ON e.category_id = c.category_id
+        WHERE e.user_id = ?
+        GROUP BY c.category_name
+    '''
+    rows = conn.execute(query, (current_user,)).fetchall()
+    conn.close()
+
+    category_list = [dict(row) for row in rows]
+    return jsonify(category_list)
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
