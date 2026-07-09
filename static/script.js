@@ -1,9 +1,10 @@
-document.addEventListener("DOMContentLoaded", function () {
+const API_BASE = "";
 
+document.addEventListener("DOMContentLoaded", function () {
     loadDashboardSummary();
     loadExpenseHistory();
+    loadCategories();
     loadPieChart();
-
 
     const expenseForm = document.getElementById("expense");
     if (expenseForm) {
@@ -11,15 +12,44 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+// --- ORANGE FIX: shared fetch helper instead of repeating
+// fetch().then(response => response.json()).catch(...) five times.
+async function apiRequest(url, options = {}) {
+    const response = await fetch(API_BASE + url, options);
+    if (!response.ok) {
+        const error = new Error(`Request failed: ${response.status}`);
+        error.status = response.status;
+        try {
+            error.body = await response.json();
+        } catch (_) {
+            error.body = null;
+        }
+        throw error;
+    }
+    return response.json();
+}
+
+// --- YELLOW FIX: visible error feedback instead of console-only.
+function showError(message) {
+    let banner = document.getElementById("error-banner");
+    if (!banner) {
+        banner = document.createElement("div");
+        banner.id = "error-banner";
+        banner.style.background = "#fce8e6";
+        banner.style.color = "#a82e2e";
+        banner.style.padding = "10px";
+        banner.style.borderRadius = "8px";
+        banner.style.margin = "10px 0";
+        banner.style.textAlign = "center";
+        document.body.prepend(banner);
+    }
+    banner.textContent = message;
+    banner.style.display = "block";
+    setTimeout(() => { banner.style.display = "none"; }, 4000);
+}
 
 function loadDashboardSummary() {
-    fetch('http://127.0.0.1:5000/api/dashboard-summary')
-        .then(response => {
-            if (!response.ok) {
-                window.location.href = "/";
-            }
-            return response.json();
-        })
+    apiRequest('/api/dashboard-summary')
         .then(data => {
             const smallText = document.getElementById("budget-spent");
             if (smallText) smallText.innerText = `₹${data.total_spent_today} spent today`;
@@ -33,13 +63,20 @@ function loadDashboardSummary() {
                 progressBar.max = data.daily_budget_target;
             }
         })
-        .catch(error => console.error("Error loading summary:", error));
+        .catch(error => {
+            // --- RED FIX: stop execution on redirect instead of falling
+            // through to render an error payload as if it were data.
+            if (error.status === 401) {
+                window.location.href = "/";
+                return;
+            }
+            console.error("Error loading summary:", error);
+            showError("Could not load your spending summary.");
+        });
 }
 
-
 function loadExpenseHistory() {
-    fetch('http://127.0.0.1:5000/api/expenses')
-        .then(response => response.json())
+    apiRequest('/api/expenses')
         .then(expenses => {
             const listContainer = document.getElementById("expense-list");
             if (!listContainer) return;
@@ -47,25 +84,77 @@ function loadExpenseHistory() {
             listContainer.innerHTML = "";
 
             if (expenses.length === 0) {
-                listContainer.innerHTML = "<p class='no-expenses'>No expenses logged yet!</p>";
+                const empty = document.createElement("p");
+                empty.className = "no-expenses";
+                empty.textContent = "No expenses logged yet!";
+                listContainer.appendChild(empty);
                 return;
             }
 
             expenses.forEach(item => {
-                const card = document.createElement("div");
-                card.className = "expense-card";
-                card.innerHTML = `
-                <div class="expense-info">
-                    <strong>${item.description}</strong>
-                    <small>${item.category_name} </small> <bold>DATE:</bold><small> ${item.date}</small>
-                </div>
-                <div class = "expense-amount-cont">
-                <div class="expense-amount"><bold>₹${item.amount}</bold></div></div>
-            `;
-                listContainer.appendChild(card);
+                listContainer.appendChild(buildExpenseCard(item));
             });
         })
-        .catch(error => console.error("Error loading history:", error));
+        .catch(error => {
+            console.error("Error loading history:", error);
+            showError("Could not load your expense history.");
+        });
+}
+
+// --- RED FIX: build cards with DOM APIs + textContent instead of
+// innerHTML, so a description like "<img src=x onerror=alert(1)>"
+// is rendered as plain text, not executed.
+function buildExpenseCard(item) {
+    const card = document.createElement("div");
+    card.className = "expense-card";
+
+    const info = document.createElement("div");
+    info.className = "expense-info";
+
+    const desc = document.createElement("strong");
+    desc.textContent = item.description || "(no description)";
+
+    const meta = document.createElement("small");
+    meta.textContent = `${item.category_name || "Uncategorized"} • DATE: ${item.date}`;
+
+    info.appendChild(desc);
+    info.appendChild(meta);
+
+    const amountCont = document.createElement("div");
+    amountCont.className = "expense-amount-cont";
+
+    const amount = document.createElement("div");
+    amount.className = "expense-amount";
+    amount.textContent = `₹${item.amount}`;
+
+    amountCont.appendChild(amount);
+
+    card.appendChild(info);
+    card.appendChild(amountCont);
+
+    return card;
+}
+
+// --- ORANGE FIX: populate the category dropdown from the DB instead
+// of four hardcoded <option> tags disconnected from Central_Categories.
+function loadCategories() {
+    apiRequest('/api/categories')
+        .then(categories => {
+            const select = document.getElementById("category");
+            if (!select || categories.length === 0) return;
+
+            select.innerHTML = "";
+            categories.forEach(name => {
+                const option = document.createElement("option");
+                option.value = name;
+                option.textContent = name;
+                select.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error("Error loading categories:", error);
+            // Leave the static HTML options in place as a fallback.
+        });
 }
 
 function handleFormSubmit(event) {
@@ -76,40 +165,67 @@ function handleFormSubmit(event) {
     const descriptionInput = document.getElementById("description");
     const categoryInput = document.getElementById("category");
 
+    const amount = parseFloat(amountInput.value);
+
+    // --- YELLOW FIX: validate before sending instead of letting NaN
+    // silently become null on the backend.
+    if (isNaN(amount) || amount <= 0) {
+        showError("Please enter a valid amount greater than 0.");
+        return;
+    }
+
+    if (!categoryInput.value) {
+        showError("Please choose a category.");
+        return;
+    }
+
     const payload = {
-        amount: parseFloat(amountInput.value),
-        description: descriptionInput.value,
+        amount: amount,
+        description: descriptionInput.value.trim(),
         category: categoryInput.value
     };
 
-    fetch('http://127.0.0.1:5000/api/add-expense', {
+    const submitButton = expenseForm.querySelector("button[type='submit']");
+    if (submitButton) submitButton.disabled = true;
+
+    apiRequest('/api/add-expense', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     })
-        .then(response => response.json())
-        .then(result => {
-            if (result.status === "success") {
-                expenseForm.reset();
-                loadDashboardSummary();
-                loadExpenseHistory();
-            } else {
-                alert("Error: " + (result.error || "Unknown"));
-            }
+        .then(() => {
+            expenseForm.reset();
+            loadDashboardSummary();
+            loadExpenseHistory();
         })
-        .catch(error => console.error("Error submitting:", error));
+        .catch(error => {
+            const message = (error.body && error.body.error) || "Something went wrong adding that expense.";
+            showError(message);
+        })
+        .finally(() => {
+            if (submitButton) submitButton.disabled = false;
+        });
 }
 
+// --- ORANGE FIX: keep a reference so we can destroy the old chart
+// before drawing a new one; otherwise Chart.js throws "Canvas is
+// already in use" the second time this runs.
+let pieChartInstance = null;
+
 function loadPieChart() {
-    fetch('http://127.0.0.1:5000/api/piechart-data')
-        .then(response => response.json())
+    apiRequest('/api/piechart-data')
         .then(data => {
             const labels = data.map(item => item.category_name);
             const amounts = data.map(item => item.total_amount);
 
             const ctx = document.getElementById('pieChart');
+            if (!ctx) return;
 
-            new Chart(ctx, {
+            if (pieChartInstance) {
+                pieChartInstance.destroy();
+            }
+
+            pieChartInstance = new Chart(ctx, {
                 type: 'pie',
                 data: {
                     labels: labels,
