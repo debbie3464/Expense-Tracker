@@ -1,4 +1,4 @@
- HEAD
+
 document.addEventListener("DOMContentLoaded", function() {
    
     loadDashboardSummary();
