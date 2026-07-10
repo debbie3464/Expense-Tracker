@@ -370,3 +370,43 @@ nav {
     font-size: larger;
     color: var(--expense-amount-con);
 }
+/* ==========================================================================
+   Page Transitions
+   ========================================================================== */
+@view-transition {
+    navigation: auto;
+}
+
+::view-transition-old(root) {
+    animation: fadeOutSlide 0.35s ease forwards;
+}
+
+::view-transition-new(root) {
+    animation: fadeInSlide 0.35s ease forwards;
+}
+
+@keyframes fadeOutSlide {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(-8px); }
+}
+
+@keyframes fadeInSlide {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+
+.page-transition-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: var(--background);
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.page-transition-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}

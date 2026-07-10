@@ -12,11 +12,9 @@ app = Flask(__name__)
 
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-fallback-key-change-me")
 
-# --- ORANGE FIX: session cookie hardening -------------------------------
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['SESSION_COOKIE_SECURE'] = not app.debug
 
-# --- ORANGE FIX: basic logging instead of silent/print-based errors ----
 logging.basicConfig(level=logging.INFO)
 
 
@@ -27,11 +25,9 @@ def get_db_connection():
     return conn
 
 
-# --- ORANGE FIX: lightweight login rate limiting (no extra dependency) -
 failed_login_attempts = defaultdict(list)
 MAX_ATTEMPTS = 5
-WINDOW_SECONDS = 300  # 5 minutes
-
+WINDOW_SECONDS = 300 
 
 def is_rate_limited(identifier):
     now = time.time()
@@ -43,8 +39,6 @@ def is_rate_limited(identifier):
 def record_failed_attempt(identifier):
     failed_login_attempts[identifier].append(time.time())
 
-
-# --- RED/YELLOW FIX: basic input validation -----------------------------
 def validate_registration(username, email, password):
     errors = []
     if not username or len(username.strip()) < 3:
@@ -74,6 +68,12 @@ def split():
     if "user_id" not in session:
         return redirect("/")
     return render_template("split.html")
+
+@app.route("/settings")
+def settings():
+    if "user_id" not in session:
+        return redirect("/")
+    return render_template("settings.html")
 
 
 @app.route('/logout')

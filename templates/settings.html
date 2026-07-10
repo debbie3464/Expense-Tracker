@@ -3,9 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>settings</title>
+   <link rel="stylesheet" href="../static/settings.css">
 </head>
 <body>
-    <h1>this will contain my settings </h1>
+    <nav>
+        <div class="logo">
+            <h1>i will draw cool logo later</h1>
+        </div>
+        <div class="nav-links">
+            <a href="/dashboard" class="{{ 'active' if request.path == '/dashboard' else '' }}">Dashboard</a>
+            <a href="/split" class="{{ 'active' if request.path == '/split' else '' }}">Split</a>
+            <a href="/settings" class="{{ 'active' if request.path == '/settings' else '' }}">Settings</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </nav>
+
+    <h1>this will contain my settings</h1>
+
+    <script src="../static/transitions.js"></script>
 </body>
-</html>
+<script src="static/transitions.js"></script>

@@ -12,8 +12,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-// --- ORANGE FIX: shared fetch helper instead of repeating
-// fetch().then(response => response.json()).catch(...) five times.
 async function apiRequest(url, options = {}) {
     const response = await fetch(API_BASE + url, options);
     if (!response.ok) {
@@ -29,7 +27,6 @@ async function apiRequest(url, options = {}) {
     return response.json();
 }
 
-// --- YELLOW FIX: visible error feedback instead of console-only.
 function showError(message) {
     let banner = document.getElementById("error-banner");
     if (!banner) {
@@ -64,8 +61,7 @@ function loadDashboardSummary() {
             }
         })
         .catch(error => {
-            // --- RED FIX: stop execution on redirect instead of falling
-            // through to render an error payload as if it were data.
+          
             if (error.status === 401) {
                 window.location.href = "/";
                 return;
@@ -249,3 +245,4 @@ function loadPieChart() {
         })
         .catch(error => console.error("Error loading pie chart:", error));
 }
+
