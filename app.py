@@ -295,11 +295,12 @@ def get_categories_list():
     finally:
         conn.close()
 
-
 @app.route('/api/expenses', methods=['GET'])
 def get_all_expenses():
     if 'user_id' not in session:
         return jsonify({"error": "Unauthorized"}), 401
+
+    today_str = datetime.now().strftime("%Y-%m-%d")
 
     conn = get_db_connection()
     try:
@@ -307,10 +308,10 @@ def get_all_expenses():
             SELECT e.amount, e.description, e.date, c.category_name 
             FROM Central_Expenses e
             LEFT JOIN Central_Categories c ON e.category_id = c.category_id
-            WHERE e.user_id = ? 
+            WHERE e.user_id = ? AND e.date = ?
             ORDER BY e.expense_id DESC
         '''
-        rows = conn.execute(query, (session['user_id'],)).fetchall()
+        rows = conn.execute(query, (session['user_id'], today_str)).fetchall()
         return jsonify([dict(row) for row in rows])
     finally:
         conn.close()
@@ -322,7 +323,7 @@ def get_categories():
         return jsonify({"error": "Unauthorized"}), 401
 
     current_user = session['user_id']
-    current_month = datetime.now().strftime("%Y-%m")  # e.g., "2026-07"
+    today_str = datetime.now().strftime("%Y-%m-%d")
     
     conn = get_db_connection()
     try:
@@ -330,10 +331,10 @@ def get_categories():
             SELECT c.category_name, SUM(e.amount) as total_amount
             FROM Central_Expenses e
             JOIN Central_Categories c ON e.category_id = c.category_id
-            WHERE e.user_id = ? AND strftime('%Y-%m', e.date) = ?
+            WHERE e.user_id = ? AND e.date = ?
             GROUP BY c.category_name
         '''
-        rows = conn.execute(query, (current_user, current_month)).fetchall()
+        rows = conn.execute(query, (current_user, today_str)).fetchall()
         return jsonify([dict(row) for row in rows])
     finally:
         conn.close()
