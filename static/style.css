@@ -349,12 +349,54 @@ nav {
     border: 1px solid var(--border);
 
     display: flex;
-    align-items: center;
-    justify-content: center;
     flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
 
     padding: var(--space-lg);
     box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-lg);
+}
+
+.expense-history h1 {
+    color: var(--expense);
+    font-size: 1.2rem;
+    margin: 0 0 var(--space-md) 0;
+}
+
+.expense-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.expense-table thead {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.expense-table thead th {
+    padding: var(--space-md);
+    font-weight: 600;
+    color: var(--text);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.expense-table tbody tr {
+    border-bottom: 0.5px solid var(--border);
+}
+
+.expense-table tbody td {
+    padding: var(--space-md);
+    color: var(--text);
+}
+
+.expense-col.amount {
+    text-align: right;
+    font-weight: 500;
+}
+
+.expense-col.category {
+    color: rgba(224, 189, 177, 0.8);
 }
 
 .expense-history h1 {

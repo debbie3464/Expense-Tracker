@@ -70,9 +70,20 @@
 
     <div class="expense-history">
         <h1>Expense History</h1>
-        <div id="expense-list">
 
-        </div>
+        <table class="expense-table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Date & Time</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody id="expense-list">
+                <!-- JavaScript inserts rows here -->
+            </tbody>
+        </table>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

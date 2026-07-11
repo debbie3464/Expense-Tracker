@@ -61,7 +61,6 @@ function loadDashboardSummary() {
             }
         })
         .catch(error => {
-          
             if (error.status === 401) {
                 window.location.href = "/";
                 return;
@@ -80,15 +79,19 @@ function loadExpenseHistory() {
             listContainer.innerHTML = "";
 
             if (expenses.length === 0) {
-                const empty = document.createElement("p");
-                empty.className = "no-expenses";
-                empty.textContent = "No expenses logged yet!";
+                const empty = document.createElement("tr");
+                const emptyCell = document.createElement("td");
+                emptyCell.colSpan = "4";
+                emptyCell.style.textAlign = "center";
+                emptyCell.style.padding = "20px";
+                emptyCell.textContent = "No expenses logged yet!";
+                empty.appendChild(emptyCell);
                 listContainer.appendChild(empty);
                 return;
             }
 
             expenses.forEach(item => {
-                listContainer.appendChild(buildExpenseCard(item));
+                listContainer.appendChild(buildExpenseRow(item));
             });
         })
         .catch(error => {
@@ -97,42 +100,38 @@ function loadExpenseHistory() {
         });
 }
 
-// --- RED FIX: build cards with DOM APIs + textContent instead of
-// innerHTML, so a description like "<img src=x onerror=alert(1)>"
-// is rendered as plain text, not executed.
-function buildExpenseCard(item) {
-    const card = document.createElement("div");
-    card.className = "expense-card";
+function buildExpenseRow(item) {
+    const row = document.createElement("tr");
+    row.className = "expense-row";
 
-    const info = document.createElement("div");
-    info.className = "expense-info";
+    // Description column
+    const descCell = document.createElement("td");
+    descCell.className = "expense-col description";
+    descCell.textContent = item.description || "(no description)";
 
-    const desc = document.createElement("strong");
-    desc.textContent = item.description || "(no description)";
+    // Category column
+    const categoryCell = document.createElement("td");
+    categoryCell.className = "expense-col category";
+    categoryCell.textContent = item.category_name || "Uncategorized";
 
-    const meta = document.createElement("small");
-    meta.textContent = `${item.category_name || "Uncategorized"} • DATE: ${item.date}`;
+    // Date & Time column
+    const dateTimeCell = document.createElement("td");
+    dateTimeCell.className = "expense-col datetime";
+    dateTimeCell.textContent = `${item.date} ${item.time}`;
 
-    info.appendChild(desc);
-    info.appendChild(meta);
+    // Amount column
+    const amountCell = document.createElement("td");
+    amountCell.className = "expense-col amount";
+    amountCell.textContent = `₹${item.amount}`;
 
-    const amountCont = document.createElement("div");
-    amountCont.className = "expense-amount-cont";
+    row.appendChild(descCell);
+    row.appendChild(categoryCell);
+    row.appendChild(dateTimeCell);
+    row.appendChild(amountCell);
 
-    const amount = document.createElement("div");
-    amount.className = "expense-amount";
-    amount.textContent = `₹${item.amount}`;
-
-    amountCont.appendChild(amount);
-
-    card.appendChild(info);
-    card.appendChild(amountCont);
-
-    return card;
+    return row;
 }
 
-// --- ORANGE FIX: populate the category dropdown from the DB instead
-// of four hardcoded <option> tags disconnected from Central_Categories.
 function loadCategories() {
     apiRequest('/api/categories')
         .then(categories => {
@@ -149,7 +148,6 @@ function loadCategories() {
         })
         .catch(error => {
             console.error("Error loading categories:", error);
-            // Leave the static HTML options in place as a fallback.
         });
 }
 
@@ -163,8 +161,6 @@ function handleFormSubmit(event) {
 
     const amount = parseFloat(amountInput.value);
 
-    // --- YELLOW FIX: validate before sending instead of letting NaN
-    // silently become null on the backend.
     if (isNaN(amount) || amount <= 0) {
         showError("Please enter a valid amount greater than 0.");
         return;
@@ -203,9 +199,6 @@ function handleFormSubmit(event) {
         });
 }
 
-// --- ORANGE FIX: keep a reference so we can destroy the old chart
-// before drawing a new one; otherwise Chart.js throws "Canvas is
-// already in use" the second time this runs.
 let pieChartInstance = null;
 
 function loadPieChart() {
@@ -245,4 +238,3 @@ function loadPieChart() {
         })
         .catch(error => console.error("Error loading pie chart:", error));
 }
-
