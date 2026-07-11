@@ -5,13 +5,13 @@ document.addEventListener("DOMContentLoaded", function () {
     loadExpenseHistory();
     loadCategories();
     loadPieChart();
+    loadDailyChart();  
 
     const expenseForm = document.getElementById("expense");
     if (expenseForm) {
         expenseForm.addEventListener("submit", handleFormSubmit);
     }
 });
-
 async function apiRequest(url, options = {}) {
     const response = await fetch(API_BASE + url, options);
     if (!response.ok) {
@@ -104,17 +104,16 @@ function buildExpenseRow(item) {
     const row = document.createElement("tr");
     row.className = "expense-row";
 
-    // Description column
     const descCell = document.createElement("td");
     descCell.className = "expense-col description";
     descCell.textContent = item.description || "(no description)";
 
-    // Category column
+    
     const categoryCell = document.createElement("td");
     categoryCell.className = "expense-col category";
     categoryCell.textContent = item.category_name || "Uncategorized";
 
-    // Amount column
+    
     const amountCell = document.createElement("td");
     amountCell.className = "expense-col amount";
     amountCell.textContent = `₹${item.amount}`;
@@ -175,23 +174,24 @@ function handleFormSubmit(event) {
     if (submitButton) submitButton.disabled = true;
 
     apiRequest('/api/add-expense', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+})
+    .then(() => {
+        expenseForm.reset();
+        loadDashboardSummary();
+        loadExpenseHistory();
+        loadPieChart();
+        loadDailyChart();  
     })
-        .then(() => {
-            expenseForm.reset();
-            loadDashboardSummary();
-            loadExpenseHistory();
-            loadPieChart();
-        })
-        .catch(error => {
-            const message = (error.body && error.body.error) || "Something went wrong adding that expense.";
-            showError(message);
-        })
-        .finally(() => {
-            if (submitButton) submitButton.disabled = false;
-        });
+    .catch(error => {
+        const message = (error.body && error.body.error) || "Something went wrong adding that expense.";
+        showError(message);
+    })
+    .finally(() => {
+        if (submitButton) submitButton.disabled = false;
+    });
 }
 
 let pieChartInstance = null;
@@ -232,4 +232,81 @@ function loadPieChart() {
             });
         })
         .catch(error => console.error("Error loading pie chart:", error));
+}
+let dailyChartInstance = null;
+
+function loadDailyChart() {
+    apiRequest('/api/daily-spending-by-hour')
+        .then(data => {
+            const ctx = document.getElementById('dailyChart');
+            if (!ctx) return;
+
+           
+            const allHours = [];
+            for (let i = 0; i < 24; i++) {
+                allHours.push(String(i).padStart(2, '0') + ':00');
+            }
+
+           
+            const amounts = new Array(24).fill(0);
+
+            
+            data.forEach(item => {
+                const hourIndex = parseInt(item.hour.split(':')[0]);
+                amounts[hourIndex] = item.total_amount;
+            });
+
+            if (dailyChartInstance) {
+                dailyChartInstance.destroy();
+            }
+
+            dailyChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: allHours,
+                    datasets: [{
+                        label: 'Spending today',
+                        data: amounts,
+                        borderColor: '#d7a889',
+                        backgroundColor: 'rgba(215, 168, 137, 0.05)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#d7a889',
+                        pointBorderColor: '#2e3745d4',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e0bdb1',
+                                font: { size: 12 }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(108, 131, 167, 0.1)' },
+                            ticks: {
+                                color: '#e0bdb1',
+                                font: { size: 11 }
+                            }
+                        },
+                        y: {
+                            grid: { color: 'rgba(108, 131, 167, 0.1)' },
+                            ticks: {
+                                color: '#e0bdb1',
+                                font: { size: 11 }
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error("Error loading daily chart:", error));
 }

@@ -21,13 +21,12 @@
         </div>
     </nav>
     <div class="daily-spending">
-        <p id="budget-spent">₹0 spent today</p>
 
         <progress class='daily-progress' id="daily-progress" value="0" max="2000"></progress>
 
         <div class="budget-summary">
             <p class="budget-spent" id="large-budget-spent">₹0 spent today</p>
-            <p class="budget-target">of ₹2000 Daily Budget</p>
+            <h4 class="budget-target">of ₹2000 Daily Budget</h4>
         </div>
 
         <form id="expense" class="expense">
@@ -57,19 +56,22 @@
 
         </form>
     </div>
+    <div>
+        <h1> ANALYTICS </h1>
+    </div>
 
     <div class="visualizations">
         <div class="pie-chart">
             <canvas id="pieChart"></canvas>
         </div>
         <div class="line-chart">
-            <h1>the line chart will go here</h1>
+            <canvas id="dailyChart"></canvas>
         </div>
 
     </div>
+    <h1>Expense History</h1>
 
     <div class="expense-history">
-        <h1>Expense History</h1>
 
         <table class="expense-table">
             <thead>
@@ -81,7 +83,7 @@
                 </tr>
             </thead>
             <tbody id="expense-list">
-                <!-- JavaScript inserts rows here -->
+
             </tbody>
         </table>
     </div>

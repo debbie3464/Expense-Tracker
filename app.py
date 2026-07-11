@@ -338,6 +338,28 @@ def get_categories():
     finally:
         conn.close()
 
+@app.route('/api/daily-spending-by-hour', methods=['GET'])
+def daily_spending_by_hour():
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    current_user = session['user_id']
+    today_str = datetime.now().strftime("%Y-%m-%d")
+
+    conn = get_db_connection()
+    try:
+        query = '''
+            SELECT strftime('%H:00', time) as hour, SUM(amount) as total_amount
+            FROM Central_Expenses
+            WHERE user_id = ? AND date = ?
+            GROUP BY strftime('%H:00', time)
+            ORDER BY hour ASC
+        '''
+        rows = conn.execute(query, (current_user, today_str)).fetchall()
+        return jsonify([dict(row) for row in rows])
+    finally:
+        conn.close()
+
 
 if __name__ == '__main__':
     debug_mode = os.environ.get("FLASK_DEBUG", "true").lower() == "true"
