@@ -322,16 +322,18 @@ def get_categories():
         return jsonify({"error": "Unauthorized"}), 401
 
     current_user = session['user_id']
+    current_month = datetime.now().strftime("%Y-%m")  # e.g., "2026-07"
+    
     conn = get_db_connection()
     try:
         query = '''
             SELECT c.category_name, SUM(e.amount) as total_amount
             FROM Central_Expenses e
             JOIN Central_Categories c ON e.category_id = c.category_id
-            WHERE e.user_id = ?
+            WHERE e.user_id = ? AND strftime('%Y-%m', e.date) = ?
             GROUP BY c.category_name
         '''
-        rows = conn.execute(query, (current_user,)).fetchall()
+        rows = conn.execute(query, (current_user, current_month)).fetchall()
         return jsonify([dict(row) for row in rows])
     finally:
         conn.close()

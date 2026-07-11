@@ -81,7 +81,7 @@ function loadExpenseHistory() {
             if (expenses.length === 0) {
                 const empty = document.createElement("tr");
                 const emptyCell = document.createElement("td");
-                emptyCell.colSpan = "4";
+                emptyCell.colSpan = "3";
                 emptyCell.style.textAlign = "center";
                 emptyCell.style.padding = "20px";
                 emptyCell.textContent = "No expenses logged yet!";
@@ -114,11 +114,6 @@ function buildExpenseRow(item) {
     categoryCell.className = "expense-col category";
     categoryCell.textContent = item.category_name || "Uncategorized";
 
-    // Date & Time column
-    const dateTimeCell = document.createElement("td");
-    dateTimeCell.className = "expense-col datetime";
-    dateTimeCell.textContent = `${item.date} ${item.time}`;
-
     // Amount column
     const amountCell = document.createElement("td");
     amountCell.className = "expense-col amount";
@@ -126,7 +121,6 @@ function buildExpenseRow(item) {
 
     row.appendChild(descCell);
     row.appendChild(categoryCell);
-    row.appendChild(dateTimeCell);
     row.appendChild(amountCell);
 
     return row;
@@ -189,6 +183,7 @@ function handleFormSubmit(event) {
             expenseForm.reset();
             loadDashboardSummary();
             loadExpenseHistory();
+            loadPieChart();
         })
         .catch(error => {
             const message = (error.body && error.body.error) || "Something went wrong adding that expense.";
