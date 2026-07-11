@@ -310,3 +310,20 @@ function loadDailyChart() {
         })
         .catch(error => console.error("Error loading daily chart:", error));
 }
+function updateDateTime() {
+    const el = document.getElementById("live-datetime");
+    if (!el) return;
+
+    const now = new Date();
+
+    const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+
+    const dateStr = now.toLocaleDateString('en-IN', dateOptions);
+    const timeStr = now.toLocaleTimeString('en-IN', timeOptions);
+
+    el.textContent = `${dateStr}|${timeStr}`;
+}
+
+updateDateTime();
+setInterval(updateDateTime, 1000);
