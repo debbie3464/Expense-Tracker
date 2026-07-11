@@ -224,7 +224,7 @@ function loadPieChart() {
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#3b1616'
+                                color: '#000000'
                             }
                         }
                     }
