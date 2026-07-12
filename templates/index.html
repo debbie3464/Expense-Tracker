@@ -20,7 +20,9 @@
             <a href="/logout">Logout</a>
         </div>
     </nav>
-    <div class="date-time"><h2 id="live-datetime">Loading...</h2></div>
+    <div class="date-time">
+        <h2 id="live-datetime">Loading...</h2>
+    </div>
     <div class="daily-spending">
 
         <progress class='daily-progress' id="daily-progress" value="0" max="2000"></progress>
@@ -57,8 +59,16 @@
 
         </form>
     </div>
-    <div>
-        <h1> TODAY'S ANALYTICS </h1>
+    <div class="analytics-section">
+        <div class="analytics-header">
+            <h1>TODAY'S ANALYTICS</h1>
+            <div class="period-toggle">
+                <button class="period-btn active" data-period="today">Today</button>
+                <button class="period-btn" data-period="weekly">Weekly</button>
+                <button class="period-btn" data-period="monthly">Monthly</button>
+                <button class="period-btn" data-period="yearly">Yearly</button>
+            </div>
+        </div>
     </div>
 
     <div class="visualizations">
@@ -68,7 +78,6 @@
         <div class="line-chart">
             <canvas id="dailyChart"></canvas>
         </div>
-
     </div>
     <h1>TODAY'S EXPENSE HISTORY</h1>
 

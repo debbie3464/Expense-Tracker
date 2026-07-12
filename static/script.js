@@ -1,17 +1,20 @@
 const API_BASE = "";
+let currentPeriod = 'today';
 
 document.addEventListener("DOMContentLoaded", function () {
     loadDashboardSummary();
     loadExpenseHistory();
     loadCategories();
-    loadPieChart();
-    loadDailyChart();  
+    loadPieChart('today');
+    loadDailyChart('today');
+    initPeriodToggle();
 
     const expenseForm = document.getElementById("expense");
     if (expenseForm) {
         expenseForm.addEventListener("submit", handleFormSubmit);
     }
 });
+
 async function apiRequest(url, options = {}) {
     const response = await fetch(API_BASE + url, options);
     if (!response.ok) {
@@ -59,6 +62,11 @@ function loadDashboardSummary() {
                 progressBar.value = data.total_spent_today;
                 progressBar.max = data.daily_budget_target;
             }
+
+            const budgetTarget = document.querySelector(".budget-target");
+            if (budgetTarget) {
+                budgetTarget.textContent = `of ₹${data.daily_budget_target} Daily Budget`;
+            }
         })
         .catch(error => {
             if (error.status === 401) {
@@ -81,7 +89,7 @@ function loadExpenseHistory() {
             if (expenses.length === 0) {
                 const empty = document.createElement("tr");
                 const emptyCell = document.createElement("td");
-                emptyCell.colSpan = "3";
+                emptyCell.colSpan = "4";
                 emptyCell.style.textAlign = "center";
                 emptyCell.style.padding = "20px";
                 emptyCell.textContent = "No expenses logged yet!";
@@ -104,22 +112,29 @@ function buildExpenseRow(item) {
     const row = document.createElement("tr");
     row.className = "expense-row";
 
+    // Description column
     const descCell = document.createElement("td");
     descCell.className = "expense-col description";
     descCell.textContent = item.description || "(no description)";
 
-    
+    // Category column
     const categoryCell = document.createElement("td");
     categoryCell.className = "expense-col category";
     categoryCell.textContent = item.category_name || "Uncategorized";
 
-    
+    // Date & Time column
+    const dateTimeCell = document.createElement("td");
+    dateTimeCell.className = "expense-col datetime";
+    dateTimeCell.textContent = `${item.date} ${item.time}`;
+
+    // Amount column
     const amountCell = document.createElement("td");
     amountCell.className = "expense-col amount";
     amountCell.textContent = `₹${item.amount}`;
 
     row.appendChild(descCell);
     row.appendChild(categoryCell);
+    row.appendChild(dateTimeCell);
     row.appendChild(amountCell);
 
     return row;
@@ -174,30 +189,32 @@ function handleFormSubmit(event) {
     if (submitButton) submitButton.disabled = true;
 
     apiRequest('/api/add-expense', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-})
-    .then(() => {
-        expenseForm.reset();
-        loadDashboardSummary();
-        loadExpenseHistory();
-        loadPieChart();
-        loadDailyChart();  
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
     })
-    .catch(error => {
-        const message = (error.body && error.body.error) || "Something went wrong adding that expense.";
-        showError(message);
-    })
-    .finally(() => {
-        if (submitButton) submitButton.disabled = false;
-    });
+        .then(() => {
+            expenseForm.reset();
+            loadDashboardSummary();
+            loadExpenseHistory();
+            loadPieChart(currentPeriod);
+            loadDailyChart(currentPeriod);
+        })
+        .catch(error => {
+            const message = (error.body && error.body.error) || "Something went wrong adding that expense.";
+            showError(message);
+        })
+        .finally(() => {
+            if (submitButton) submitButton.disabled = false;
+        });
 }
 
 let pieChartInstance = null;
 
-function loadPieChart() {
-    apiRequest('/api/piechart-data')
+function loadPieChart(period = 'today') {
+    currentPeriod = period;
+    
+    apiRequest(`/api/piechart-data?period=${period}`)
         .then(data => {
             const labels = data.map(item => item.category_name);
             const amounts = data.map(item => item.total_amount);
@@ -224,7 +241,7 @@ function loadPieChart() {
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#000000'
+                                color: '#3b1616'
                             }
                         }
                     }
@@ -233,28 +250,18 @@ function loadPieChart() {
         })
         .catch(error => console.error("Error loading pie chart:", error));
 }
+
 let dailyChartInstance = null;
 
-function loadDailyChart() {
-    apiRequest('/api/daily-spending-by-hour')
+function loadDailyChart(period = 'today') {
+    apiRequest(`/api/daily-spending-by-hour?period=${period}`)
         .then(data => {
             const ctx = document.getElementById('dailyChart');
             if (!ctx) return;
 
-           
-            const allHours = [];
-            for (let i = 0; i < 24; i++) {
-                allHours.push(String(i).padStart(2, '0') + ':00');
-            }
-
-           
-            const amounts = new Array(24).fill(0);
-
-            
-            data.forEach(item => {
-                const hourIndex = parseInt(item.hour.split(':')[0]);
-                amounts[hourIndex] = item.total_amount;
-            });
+            // Map labels and amounts from API response
+            const labels = data.map(item => item.label);
+            const amounts = data.map(item => item.total_amount);
 
             if (dailyChartInstance) {
                 dailyChartInstance.destroy();
@@ -263,9 +270,9 @@ function loadDailyChart() {
             dailyChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: allHours,
+                    labels: labels,
                     datasets: [{
-                        label: 'Spending today',
+                        label: `Spending - ${period.charAt(0).toUpperCase() + period.slice(1)}`,
                         data: amounts,
                         borderColor: '#d7a889',
                         backgroundColor: 'rgba(215, 168, 137, 0.05)',
@@ -310,20 +317,24 @@ function loadDailyChart() {
         })
         .catch(error => console.error("Error loading daily chart:", error));
 }
-function updateDateTime() {
-    const el = document.getElementById("live-datetime");
-    if (!el) return;
 
-    const now = new Date();
-
-    const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
-
-    const dateStr = now.toLocaleDateString('en-IN', dateOptions);
-    const timeStr = now.toLocaleTimeString('en-IN', timeOptions);
-
-    el.textContent = `${dateStr}|${timeStr}`;
+function initPeriodToggle() {
+    const periodBtns = document.querySelectorAll('.period-btn');
+    
+    periodBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active class from all buttons
+            periodBtns.forEach(b => b.classList.remove('active'));
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Get selected period
+            const period = this.getAttribute('data-period');
+            
+            // Reload charts with new period
+            loadPieChart(period);
+            loadDailyChart(period);
+        });
+    });
 }
-
-updateDateTime();
-setInterval(updateDateTime, 1000);

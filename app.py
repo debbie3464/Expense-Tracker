@@ -3,7 +3,8 @@ import os
 import sqlite3
 import time
 from collections import defaultdict
-from datetime import datetime
+
+from datetime import datetime, timedelta
 
 from flask import Flask, jsonify, request, render_template, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -317,28 +318,44 @@ def get_all_expenses():
         conn.close()
 
 
-@app.route("/api/piechart-data", methods=['GET'])
-def get_categories():
+@app.route('/api/piechart-data', methods=['GET'])
+def get_piechart_data():
     if 'user_id' not in session:
         return jsonify({"error": "Unauthorized"}), 401
 
     current_user = session['user_id']
-    today_str = datetime.now().strftime("%Y-%m-%d")
+    period = request.args.get('period', 'today')
     
     conn = get_db_connection()
     try:
-        query = '''
+        if period == 'today':
+            date_filter = f"AND strftime('%Y-%m-%d', e.date) = '{datetime.now().strftime('%Y-%m-%d')}'"
+        elif period == 'weekly':
+            # Monday of current week to Sunday
+            today = datetime.now()
+            monday = today - timedelta(days=today.weekday())
+            sunday = monday + timedelta(days=6)
+            date_filter = f"AND e.date BETWEEN '{monday.strftime('%Y-%m-%d')}' AND '{sunday.strftime('%Y-%m-%d')}'"
+        elif period == 'monthly':
+            current_month = datetime.now().strftime("%Y-%m")
+            date_filter = f"AND strftime('%Y-%m', e.date) = '{current_month}'"
+        elif period == 'yearly':
+            current_year = datetime.now().strftime("%Y")
+            date_filter = f"AND strftime('%Y', e.date) = '{current_year}'"
+        else:
+            date_filter = ""
+
+        query = f'''
             SELECT c.category_name, SUM(e.amount) as total_amount
             FROM Central_Expenses e
             JOIN Central_Categories c ON e.category_id = c.category_id
-            WHERE e.user_id = ? AND e.date = ?
+            WHERE e.user_id = ? {date_filter}
             GROUP BY c.category_name
         '''
-        rows = conn.execute(query, (current_user, today_str)).fetchall()
+        rows = conn.execute(query, (current_user,)).fetchall()
         return jsonify([dict(row) for row in rows])
     finally:
         conn.close()
-
 @app.route('/api/daily-spending-by-hour', methods=['GET'])
 def daily_spending_by_hour():
     if 'user_id' not in session:
