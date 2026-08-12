@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Calendar Heatmap Demo</title>
+  <link rel="stylesheet" href="./src/styles.css">
+  <style>
+    body {
+      background: #111;
+      color: #eee;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+    h1 { font-size: 1.3rem; margin-bottom: 24px; }
+    #app { margin-bottom: 40px; }
+  </style>
+</head>
+<body>
+  <h1>Calendar Heatmap — Demo (Spending Tracker)</h1>
+  <div id="app"></div>
+
+  <script type="module">
+    import { CalendarHeatmap } from './src/index.js';
+
+    // Sample data: date -> intensity value (e.g. $ spent, scaled 1-10)
+    const sampleData = {
+      '2026-08-01': 2,
+      '2026-08-02': 5,
+      '2026-08-03': 1,
+      '2026-08-04': 8,
+      '2026-08-05': 3,
+      '2026-08-06': 6,
+    };
+
+    const heatmap = new CalendarHeatmap({
+      container: document.getElementById('app'),
+      year: 2026,
+      month: 7, // August (0-indexed: 0=Jan ... 7=Aug)
+      data: sampleData,
+      colorRange: ['#f0f9ff', '#0369a1'], // light blue -> dark blue
+      valueRange: [1, 10],
+      emptyColor: '#2a2a2a',
+    });
+
+    heatmap.render();
+
+    // Expose to the browser console so you can play with it live:
+    // e.g. try: heatmap.setData({'2026-08-10': 10})
+    window.heatmap = heatmap;
+  </script>
+</body>
+</html>

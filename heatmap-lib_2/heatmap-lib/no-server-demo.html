@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./src/styles.css">
+</head>
+<body>
+    <div id="app"></div>
+
+    <!-- Plain script tag, no type="module" needed -->
+    <script src="./dist-standalone/index.global.js"></script>
+    <script>
+      // HeatmapLib.CalendarHeatmap is available globally, no import needed
+      const heatmap = new HeatmapLib.CalendarHeatmap({
+        container: document.getElementById('app'),
+        year: 2026,
+        month: 7, // August
+        data: {
+          '2026-08-01': 2,
+          '2026-08-04': 8,
+          '2026-08-06': 6,
+        },
+        colorRange: ['#f0f9ff', '#0369a1'],
+        valueRange: [1, 10],
+      });
+
+      heatmap.render();
+    </script>
+</body>
+</html>

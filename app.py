@@ -356,6 +356,7 @@ def get_piechart_data():
         return jsonify([dict(row) for row in rows])
     finally:
         conn.close()
+
 @app.route('/api/daily-spending-by-hour', methods=['GET'])
 def daily_spending_by_hour():
     if 'user_id' not in session:
@@ -377,8 +378,29 @@ def daily_spending_by_hour():
         return jsonify([dict(row) for row in rows])
     finally:
         conn.close()
+@app.route('/api/monthly-heatmap', methods=['GET'])
+def get_monthly_heatmap():
+    if 'user_id' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
 
+    now = datetime.now()
+    year = request.args.get('year', default=now.year, type=int)
+    month = request.args.get('month', default=now.month, type=int)  # 1-12
+    month_str = f"{year:04d}-{month:02d}"
 
+    conn = get_db_connection()
+    try:
+        query = '''
+            SELECT date, SUM(amount) as total
+            FROM Central_Expenses
+            WHERE user_id = ? AND strftime('%Y-%m', date) = ?
+            GROUP BY date
+        '''
+        rows = conn.execute(query, (session['user_id'], month_str)).fetchall()
+        return jsonify({row['date']: row['total'] for row in rows})
+    finally:
+        conn.close()
+        
 if __name__ == '__main__':
     debug_mode = os.environ.get("FLASK_DEBUG", "true").lower() == "true"
     app.run(debug=debug_mode, port=5000)

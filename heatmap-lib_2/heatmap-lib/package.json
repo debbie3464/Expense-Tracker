@@ -1,0 +1,30 @@
+{
+  "name": "calendar-heatmap-lib",
+  "version": "0.1.0",
+  "description": "A reusable calendar heatmap component for visualizing daily values (e.g. spending, habits, activity) with configurable colors.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.js --format esm,cjs --dts --sourcemap && cp src/styles.css dist/styles.css",
+    "dev": "tsup src/index.js --format esm,cjs --watch"
+  },
+  "keywords": ["heatmap", "calendar", "visualization", "chart"],
+  "license": "MIT",
+  "devDependencies": {
+    "jsdom": "^30.0.1",
+    "tsup": "^8.5.1"
+  }
+}

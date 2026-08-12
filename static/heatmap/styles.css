@@ -1,0 +1,88 @@
+.chm-container {
+  font-family: system-ui, -apple-system, sans-serif;
+  display: inline-block;
+}
+
+.chm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+.chm-header-label {
+  flex: 1;
+  text-align: center;
+}
+
+.chm-nav-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 4px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.chm-nav-btn:hover {
+  background: rgba(128, 128, 128, 0.2);
+}
+
+.chm-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.chm-legend-bar {
+  flex: 1;
+  height: 10px;
+  border-radius: 5px;
+}
+
+.chm-weekday-row,
+.chm-week-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.chm-weekday-label {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #888;
+  padding: 4px 0;
+}
+
+.chm-cell {
+  aspect-ratio: 1 / 1;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #fff;
+  transition: transform 0.1s ease;
+}
+
+.chm-cell:not(.chm-cell--blank):hover {
+  transform: scale(1.08);
+  cursor: default;
+}
+
+.chm-cell--blank {
+  visibility: hidden;
+}
+
+.chm-cell--empty {
+  color: #999;
+}
