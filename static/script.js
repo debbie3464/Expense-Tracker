@@ -9,6 +9,9 @@ document.addEventListener("DOMContentLoaded", function () {
     loadDailyChart('today');
     initPeriodToggle();
 
+    const now = new Date();                              // ← add
+    loadHeatmap(now.getFullYear(), now.getMonth() + 1);
+
     const expenseForm = document.getElementById("expense");
     if (expenseForm) {
         expenseForm.addEventListener("submit", handleFormSubmit);
@@ -199,6 +202,7 @@ function handleFormSubmit(event) {
             loadExpenseHistory();
             loadPieChart(currentPeriod);
             loadDailyChart(currentPeriod);
+            loadHeatmap(heatmapInstance.year, heatmapInstance.month + 1);
         })
         .catch(error => {
             const message = (error.body && error.body.error) || "Something went wrong adding that expense.";
@@ -213,7 +217,7 @@ let pieChartInstance = null;
 
 function loadPieChart(period = 'today') {
     currentPeriod = period;
-    
+
     apiRequest(`/api/piechart-data?period=${period}`)
         .then(data => {
             const labels = data.map(item => item.category_name);
@@ -320,21 +324,52 @@ function loadDailyChart(period = 'today') {
 
 function initPeriodToggle() {
     const periodBtns = document.querySelectorAll('.period-btn');
-    
+
     periodBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             // Remove active class from all buttons
             periodBtns.forEach(b => b.classList.remove('active'));
-            
+
             // Add active class to clicked button
             this.classList.add('active');
-            
+
             // Get selected period
             const period = this.getAttribute('data-period');
-            
+
             // Reload charts with new period
             loadPieChart(period);
             loadDailyChart(period);
         });
     });
+}
+let heatmapInstance = null;
+
+function loadHeatmap(year, month) {
+    apiRequest(`/api/monthly-heatmap?year=${year}&month=${month}`)
+        .then(data => {
+            const container = document.getElementById('spending-heatmap');
+            if (!container) return;
+
+            const values = Object.values(data);
+            const maxValue = Math.max(2000, ...values);
+
+            if (!heatmapInstance) {
+                heatmapInstance = new HeatmapLib.CalendarHeatmap({
+                    container,
+                    year,
+                    month: month - 1,
+                    data,
+                    colorRange: ['#2e3745', '#940e0e'],
+                    valueRange: [0, maxValue],
+                    emptyColor: '#3a4353',
+                    onMonthChange: (newYear, newMonth) => {
+                        loadHeatmap(newYear, newMonth + 1);
+                    },
+                });
+                heatmapInstance.render();
+            } else {
+                heatmapInstance.setData(data);
+            }
+        })
+        .catch(error => console.error("Error loading heatmap:", error));
 }

@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The expense tracker </title>
     <link rel="stylesheet" href="../static/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='heatmap/styles.css') }}">
+    <script src="{{ url_for('static', filename='heatmap/index.global.js') }}"></script>
 </head>
 
 <body>
@@ -79,6 +81,11 @@
             <canvas id="dailyChart"></canvas>
         </div>
     </div>
+    <details class="pie-chart heatmap-collapsible" open>
+        <summary>SPENDING HEATMAP</summary>
+        <div id="spending-heatmap"></div>
+    </details >
+    
     <h1>TODAY'S EXPENSE HISTORY</h1>
 
     <div class="expense-history">

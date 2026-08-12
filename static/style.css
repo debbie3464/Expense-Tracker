@@ -315,6 +315,36 @@ nav {
     width: 100%;
     background-color: var(--background);
 }
+.heatmap-collapsible summary {
+    cursor: pointer;
+    font-size: 1.1rem;
+    text-align: center;
+    color: var(--accent);
+    padding: var(--space-sm) 0;
+    list-style: none;
+    user-select: none;
+}
+
+.heatmap-collapsible summary::-webkit-details-marker {
+    display: none;
+}
+
+.heatmap-collapsible summary::before {
+    content: '▸';
+    display: inline-block;
+    margin-right: 8px;
+    transition: transform 0.2s ease;
+}
+
+.heatmap-collapsible[open] summary::before {
+    transform: rotate(90deg);
+}
+
+.heatmap-collapsible #spending-heatmap {
+    margin-top: var(--space-md);
+    display: flex;
+    justify-content: center;
+}
 
 .pie-chart,
 .line-chart {
